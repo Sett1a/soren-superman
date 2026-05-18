@@ -1,0 +1,20 @@
+node_modules/
+dist/
+
+src-tauri/target/
+src-tauri/gen/
+
+# mini-terminal subproject
+mini-terminal/node_modules/
+mini-terminal/dist/
+mini-terminal/src-tauri/target/
+mini-terminal/src-tauri/gen/
+
+# Supremum subproject (formerly mini-terminal-editor)
+Supremum/node_modules/
+Supremum/dist/
+Supremum/src-tauri/target/
+Supremum/src-tauri/gen/
+
+.DS_Store
+*.log

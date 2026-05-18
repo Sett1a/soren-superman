@@ -1,0 +1,7 @@
+This project is based on Supremum:
+https://github.com/HybridTalentComputing/Supremum
+
+This repository preserves the upstream GPL-3.0 license in `LICENSE`.
+
+Current local modifications include a Windows packaging fix so the
+release executable launches without opening an extra console window first.
