@@ -3224,6 +3224,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "soren-superman"
+version = "0.0.2"
+dependencies = [
+ "base64 0.22.1",
+ "cocoa",
+ "objc",
+ "portable-pty",
+ "raw-window-handle",
+ "serde",
+ "serde_json",
+ "tauri",
+ "tauri-build",
+ "tauri-plugin-dialog",
+]
+
+[[package]]
 name = "soup3"
 version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3309,22 +3325,6 @@ name = "strsim"
 version = "0.11.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7da8b5736845d9f2fcb837ea5d9e2628564b3b043a70948a3f0b778838c5fb4f"
-
-[[package]]
-name = "supremum"
-version = "0.0.1"
-dependencies = [
- "base64 0.22.1",
- "cocoa",
- "objc",
- "portable-pty",
- "raw-window-handle",
- "serde",
- "serde_json",
- "tauri",
- "tauri-build",
- "tauri-plugin-dialog",
-]
 
 [[package]]
 name = "swift-rs"

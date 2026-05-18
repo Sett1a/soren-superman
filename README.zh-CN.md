@@ -1,25 +1,25 @@
 <div align="center">
 
-<img width="full" alt="Supremum" src="docs/images/workspace-overview-ai-editor-terminal.png" />
+<img width="full" alt="Soren Superman" src="docs/images/workspace-overview-ai-editor-terminal.png" />
 
 ### 面向 AI 时代的简单、轻量但强大的 AI 代码编辑器。
 
-<sub><strong>Supremum v0.0.1 已发布。</strong> 现已支持 macOS 和 Windows，可在 <a href="https://github.com/HybridTalentComputing/Supremum/releases">Releases</a> 下载。</sub>
+<sub><strong>Soren Superman v0.0.2 已发布。</strong> 现已支持 macOS 和 Windows，可在 <a href="https://github.com/Sett1a/soren-supermum/releases">Releases</a> 下载。</sub>
 
-> <sub><strong>macOS 提醒：</strong> 如果 macOS 提示 `Supremum.app` 已损坏，或阻止它打开，请查看下方的 <a href="#macos-安装提醒">macOS 安装提醒</a> 获取说明。</sub>
+> <sub><strong>macOS 提醒：</strong> 如果 macOS 提示 `Soren Superman.app` 已损坏，或阻止它打开，请查看下方的 <a href="#macos-安装提醒">macOS 安装提醒</a> 获取说明。</sub>
 >
 > <sub><strong>Windows 提醒：</strong> 如果 Windows 运行安装程序时弹出"Windows 已保护你的电脑"的 SmartScreen 提示，请查看下方的 <a href="#windows-安装提醒">Windows 安装提醒</a> 获取说明。</sub>
 
 </div>
 
 
-## 为什么选择 Supremum？
+## 为什么选择 Soren Superman？
 
-Supremum 是一个围绕真实 coding CLI、真实终端、本地文件和集成代码审查打造的本地桌面工作区。
+Soren Superman 是一个围绕真实 coding CLI、真实终端、本地文件和集成代码审查打造的本地桌面工作区。
 
 它保留 CLI 原本的工作流，再在外层补上缺失的 UI。
 
-| 问题 | Supremum 的做法 |
+| 问题 | Soren Superman 的做法 |
 | --- | --- |
 | Raw coding CLI 很强，但太手工 | 增加 launcher tabs、历史恢复、上下文传递和集成 review |
 | VS Code / Cursor 对 terminal-first 工作流来说偏重 | 用更轻的 workspace 包住真实终端会话 |
@@ -33,11 +33,11 @@ Supremum 是一个围绕真实 coding CLI、真实终端、本地文件和集成
 
 | 应用 | macOS ARM64 DMG | Windows x64 Setup |
 | --- | --- | --- |
-| **Supremum** | **`4.71 MB`** | **`3.3 MB`** |
+| **Soren Superman** | **`4.71 MB`** | **`3.3 MB`** |
 | Cursor | `248.91 MB` | — |
 | VS Code | `252.38 MB` | — |
 
-**Supremum 在两个平台上的安装包均不到 5 MB。**
+**Soren Superman 在两个平台上的安装包均不到 5 MB。**
 
 这里对比的是安装包文件大小，不代表运行时内存占用或解压后的完整应用体积。
 
@@ -145,8 +145,8 @@ bun run tauri build
 
 构建产物位于：
 
-- NSIS 安装包：`src-tauri/target/release/bundle/nsis/Supremum_<version>_x64-setup.exe`
-- MSI 安装包：`src-tauri/target/release/bundle/msi/Supremum_<version>_x64_en-US.msi`
+- NSIS 安装包：`src-tauri/target/release/bundle/nsis/Soren Superman_<version>_x64-setup.exe`
+- MSI 安装包：`src-tauri/target/release/bundle/msi/Soren Superman_<version>_x64_en-US.msi`
 
 ### macOS 安装提醒
 
@@ -155,17 +155,17 @@ bun run tauri build
 当前 GitHub Release 提供的 macOS 安装包还没有完成 notarization。
 如果 macOS 提示安装包或应用“已损坏”或阻止打开，请按下面步骤处理。
 
-1. 打开 DMG，把 `Supremum.app` 拖到 `Applications`
+1. 打开 DMG，把 `Soren Superman.app` 拖到 `Applications`
 2. 如果第一次启动时拦的是安装后的应用，先给应用本体移除 quarantine：
 
 ```bash
-xattr -dr com.apple.quarantine "/Applications/Supremum.app"
+xattr -dr com.apple.quarantine "/Applications/Soren Superman.app"
 ```
 
 3. 如果第 2 步还不行，或者 DMG 还没打开就被系统拦截，再给 DMG 移除 quarantine 后重试：
 
 ```bash
-xattr -dr com.apple.quarantine ~/Downloads/Supremum_0.0.1_aarch64.dmg
+xattr -dr com.apple.quarantine ~/Downloads/Soren_Superman_0.0.2_aarch64.dmg
 ```
 
 **大多数情况下，只需要执行第 2 步。**
@@ -208,6 +208,6 @@ xattr -dr com.apple.quarantine ~/Downloads/Supremum_0.0.1_aarch64.dmg
 
 ## 许可证
 
-Supremum 使用 GNU General Public License v3.0 许可证。
+Soren Superman 使用 GNU General Public License v3.0 许可证。
 
 完整文本请见 [LICENSE](./LICENSE)。

@@ -10,7 +10,8 @@ import {
   type ReactNode,
 } from "react";
 
-const RECENT_PROJECTS_STORAGE_KEY = "supremum.recent-projects";
+const RECENT_PROJECTS_STORAGE_KEY = "soren-superman.recent-projects";
+const LEGACY_RECENT_PROJECTS_STORAGE_KEY = "supremum.recent-projects";
 const MAX_RECENT_PROJECTS = 8;
 
 type WorkspaceContextValue = {
@@ -27,7 +28,9 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     try {
-      const stored = window.localStorage.getItem(RECENT_PROJECTS_STORAGE_KEY);
+      const stored =
+        window.localStorage.getItem(RECENT_PROJECTS_STORAGE_KEY) ??
+        window.localStorage.getItem(LEGACY_RECENT_PROJECTS_STORAGE_KEY);
       if (!stored) return;
       const parsed = JSON.parse(stored);
       if (Array.isArray(parsed)) {

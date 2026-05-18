@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "Supremum",
-  "version": "0.0.1",
-  "identifier": "com.htcmax.supremum",
+  "productName": "Soren Superman",
+  "version": "0.0.2",
+  "identifier": "com.sett1a.sorensuperman",
   "build": {
     "beforeDevCommand": "bun run dev",
     "beforeBuildCommand": "bun run build",
@@ -14,7 +14,7 @@
     "windows": [
       {
         "label": "main",
-        "title": "Supremum",
+        "title": "Soren Superman",
         "width": 1200,
         "height": 900,
         "resizable": true,

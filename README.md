@@ -1,27 +1,27 @@
 <div align="center">
 
-<img width="full" alt="Supremum" src="docs/images/workspace-overview-ai-editor-terminal.png" />
+<img width="full" alt="Soren Superman" src="docs/images/workspace-overview-ai-editor-terminal.png" />
 
 ### A better AI Terminal for Vibe Coding.
 
 🌐 **English** | [**中文**](./README.zh-CN.md)
 
-<sub><strong>Supremum v0.0.1 is out.</strong> Supports macOS and Windows. Download it from <a href="https://github.com/HybridTalentComputing/Supremum/releases">Releases</a>.</sub>
+<sub><strong>Soren Superman v0.0.2 is out.</strong> Supports macOS and Windows. Download it from <a href="https://github.com/Sett1a/soren-supermum/releases">Releases</a>.</sub>
 
-> <sub><strong>macOS note:</strong> If macOS says `Supremum.app` is damaged or blocks it from opening, see the <a href="#macos-install-note">macOS Install Note</a> section below for instructions.</sub>
+> <sub><strong>macOS note:</strong> If macOS says `Soren Superman.app` is damaged or blocks it from opening, see the <a href="#macos-install-note">macOS Install Note</a> section below for instructions.</sub>
 >
 > <sub><strong>Windows note:</strong> If Windows shows a "Windows protected your PC" SmartScreen warning when running the installer, see the <a href="#windows-install-note">Windows Install Note</a> section below for instructions.</sub>
 
 </div>
 
 
-## Why Supremum?
+## Why Soren Superman?
 
-Supremum is a local desktop workspace built around real coding CLIs, real terminals, local files, and integrated code review.
+Soren Superman is a local desktop workspace built around real coding CLIs, real terminals, local files, and integrated code review.
 
 It keeps the CLI workflow intact, then adds the missing UI layer around it.
 
-| Problem | What Supremum does |
+| Problem | What Soren Superman does |
 | --- | --- |
 | Raw coding CLIs are powerful but manual | Adds launcher tabs, recent session resume, context handoff, and integrated review |
 | VS Code / Cursor can feel heavy for terminal-first work | Keeps a lightweight workspace around real terminal sessions |
@@ -35,11 +35,11 @@ Based on locally built/downloaded installers:
 
 | App | macOS ARM64 DMG | Windows x64 Setup |
 | --- | --- | --- |
-| **Supremum** | **`4.71 MB`** | **`3.3 MB`** |
+| **Soren Superman** | **`4.71 MB`** | **`3.3 MB`** |
 | Cursor | `248.91 MB` | — |
 | VS Code | `252.38 MB` | — |
 
-**Supremum ships in under 5 MB on both platforms.**
+**Soren Superman ships in under 5 MB on both platforms.**
 
 This comparison reflects installer file size only, not runtime memory usage or full extracted app size.
 
@@ -147,8 +147,8 @@ bun run tauri build
 
 Built installers are located at:
 
-- NSIS: `src-tauri/target/release/bundle/nsis/Supremum_<version>_x64-setup.exe`
-- MSI: `src-tauri/target/release/bundle/msi/Supremum_<version>_x64_en-US.msi`
+- NSIS: `src-tauri/target/release/bundle/nsis/Soren Superman_<version>_x64-setup.exe`
+- MSI: `src-tauri/target/release/bundle/msi/Soren Superman_<version>_x64_en-US.msi`
 
 ### macOS Install Note
 
@@ -157,17 +157,17 @@ Built installers are located at:
 Current GitHub Release builds are not notarized yet.
 If macOS blocks the installer or says the app is damaged, use the steps below.
 
-1. Open the DMG and drag `Supremum.app` into `Applications`
+1. Open the DMG and drag `Soren Superman.app` into `Applications`
 2. If the installed app is blocked on first launch, remove quarantine from the app first:
 
 ```bash
-xattr -dr com.apple.quarantine "/Applications/Supremum.app"
+xattr -dr com.apple.quarantine "/Applications/Soren Superman.app"
 ```
 
 3. If step 2 does not fix it, or macOS blocks the downloaded DMG before you can open it, also remove quarantine from the DMG and try again:
 
 ```bash
-xattr -dr com.apple.quarantine ~/Downloads/Supremum_0.0.1_aarch64.dmg
+xattr -dr com.apple.quarantine ~/Downloads/Soren_Superman_0.0.2_aarch64.dmg
 ```
 
 **In most cases, step 2 is the only step required.**
@@ -210,6 +210,6 @@ If Windows shows a "Windows protected your PC" SmartScreen warning when running 
 
 ## License
 
-Supremum is licensed under the GNU General Public License v3.0.
+Soren Superman is licensed under the GNU General Public License v3.0.
 
 See [LICENSE](./LICENSE) for the full text.

@@ -6,6 +6,8 @@ import { fileURLToPath } from "node:url";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..");
 const TAURI_DIR = resolve(ROOT, "src-tauri");
+const PRODUCT_NAME = "Soren Superman";
+const PRODUCT_ARTIFACT_BASENAME = "Soren_Superman";
 
 const target = process.argv[2];
 
@@ -42,9 +44,9 @@ const version = JSON.parse(
 ).version as string;
 
 const targetRoot = resolve(TAURI_DIR, "target", target, "release");
-const appPath = resolve(targetRoot, "bundle", "macos", "Supremum.app");
+const appPath = resolve(targetRoot, "bundle", "macos", `${PRODUCT_NAME}.app`);
 const dmgDir = resolve(targetRoot, "bundle", "dmg");
-const dmgName = `Supremum_${version}_${suffixByTarget[target]}.dmg`;
+const dmgName = `${PRODUCT_ARTIFACT_BASENAME}_${version}_${suffixByTarget[target]}.dmg`;
 const dmgPath = resolve(dmgDir, dmgName);
 const collectedDir = resolve(TAURI_DIR, "target", "release-artifacts", version, "macos");
 const collectedDmgPath = resolve(collectedDir, dmgName);
@@ -88,8 +90,8 @@ run([
 mkdirSync(dmgDir, { recursive: true });
 rmSync(dmgPath, { force: true });
 
-const stagingDir = mkdtempSync(join(tmpdir(), "supremum-dmg-"));
-const stagedAppPath = resolve(stagingDir, "Supremum.app");
+const stagingDir = mkdtempSync(join(tmpdir(), "soren-superman-dmg-"));
+const stagedAppPath = resolve(stagingDir, `${PRODUCT_NAME}.app`);
 
 cpSync(appPath, stagedAppPath, { recursive: true });
 symlinkSync("/Applications", resolve(stagingDir, "Applications"));
@@ -98,7 +100,7 @@ run([
   "hdiutil",
   "create",
   "-volname",
-  "Supremum",
+  PRODUCT_NAME,
   "-srcfolder",
   stagingDir,
   "-ov",

@@ -1634,7 +1634,7 @@ export function MainLayout() {
       const isDirty = targetTab.content !== targetTab.savedContent;
       if (isDirty) {
         const confirmed = await confirm(`"${getTabName(targetTab.path)}" has unsaved changes. Close it anyway?`, {
-          title: "Supremum",
+          title: "Soren Superman",
           kind: "warning",
           okLabel: "OK",
           cancelLabel: "Cancel",
@@ -1732,7 +1732,7 @@ export function MainLayout() {
       if (diffDirtyState[tabId]) {
         const label = targetTab.kind === "all" ? "All Changes" : getDiffFileName(targetTab.file.path);
         const confirmed = await confirm(`"${label}" has unsaved changes. Close it anyway?`, {
-          title: "Supremum",
+          title: "Soren Superman",
           kind: "warning",
           okLabel: "OK",
           cancelLabel: "Cancel",
@@ -1770,7 +1770,7 @@ export function MainLayout() {
             ? `"${dirtyDiffTabs[0]?.kind === "all" ? "All Changes" : getDiffFileName(dirtyDiffTabs[0].file.path)}" has unsaved changes. Close all diff tabs anyway?`
             : `${dirtyDiffTabs.length} diff tabs have unsaved changes. Close all diff tabs anyway?`,
           {
-            title: "Supremum",
+            title: "Soren Superman",
             kind: "warning",
             okLabel: "Close All",
             cancelLabel: "Cancel",
@@ -2624,7 +2624,7 @@ export function MainLayout() {
             ? `"${getTabName(dirtyTabs[0].path)}" has unsaved changes. Close all editor tabs anyway?`
             : `${dirtyTabs.length} editor tabs have unsaved changes. Close all editor tabs anyway?`,
           {
-            title: "Supremum",
+            title: "Soren Superman",
             kind: "warning",
             okLabel: "Close All",
             cancelLabel: "Cancel",

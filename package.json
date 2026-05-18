@@ -1,7 +1,7 @@
 {
-  "name": "supremum",
+  "name": "soren-superman",
   "private": true,
-  "version": "0.0.1",
+  "version": "0.0.2",
   "license": "GPL-3.0-only",
   "type": "module",
   "packageManager": "bun@1.3.10",
