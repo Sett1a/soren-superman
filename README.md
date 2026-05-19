@@ -1,215 +1,157 @@
-<div align="center">
+# Soren Superman
 
-<img width="full" alt="Soren Superman" src="docs/images/workspace-overview-ai-editor-terminal.png" />
+![Soren Superman workspace](docs/images/workspace-overview-ai-editor-terminal.png)
 
-### A better AI Terminal for Vibe Coding.
+Soren Superman is a local desktop workspace for people who prefer real coding CLIs over browser chat boxes.
 
-🌐 **English** | [**中文**](./README.zh-CN.md)
+It keeps the terminal at the center, then adds the missing pieces around it: file browsing, editing, diffs, review surfaces, and faster context handoff into your coding assistant.
 
-<sub><strong>Soren Superman v0.0.3 is out.</strong> Supports macOS and Windows. Download it from <a href="https://github.com/Sett1a/soren-superman/releases">Releases</a>.</sub>
+## What It Is
 
-> <sub><strong>macOS note:</strong> If macOS says `Soren Superman.app` is damaged or blocks it from opening, see the <a href="#macos-install-note">macOS Install Note</a> section below for instructions.</sub>
->
-> <sub><strong>Windows note:</strong> If Windows shows a "Windows protected your PC" SmartScreen warning when running the installer, see the <a href="#windows-install-note">Windows Install Note</a> section below for instructions.</sub>
+Soren Superman is built for a terminal-first workflow:
 
-</div>
+- Launch supported coding CLIs from a desktop app instead of wiring everything together manually
+- Move from files to editor to terminal to diff without leaving the workspace
+- Send files, folders, selections, and terminal output into AI sessions with fewer repetitive steps
+- Keep multiple panes open when you want parallel CLI and terminal work
 
+## Why People Use It
 
-## Why Soren Superman?
+Traditional editors are powerful, but they can feel oversized when the actual work is happening in a shell.
 
-Soren Superman is a local desktop workspace built around real coding CLIs, real terminals, local files, and integrated code review.
+Soren Superman takes the opposite approach:
 
-It keeps the CLI workflow intact, then adds the missing UI layer around it.
+- The terminal stays real
+- Local files stay local
+- The app acts like a lightweight control room around your CLI tools
 
-| Problem | What Soren Superman does |
-| --- | --- |
-| Raw coding CLIs are powerful but manual | Adds launcher tabs, recent session resume, context handoff, and integrated review |
-| VS Code / Cursor can feel heavy for terminal-first work | Keeps a lightweight workspace around real terminal sessions |
-| Files, terminal output, and diffs are fragmented | Brings Files, Editor, Changes, Diff, and AI sessions into one place |
-| Context passing is repetitive | Lets you send files, folders, code selections, and terminal output directly into Claude Code |
-| Multi-session work gets messy fast | Supports split panes for AI Coding CLI and Terminal |
+## Current Focus
 
-## Installer Size Snapshot
+This project currently emphasizes:
 
-Based on locally built/downloaded installers:
+- Claude Code session launch and resume workflows
+- Fast local navigation across files, changes, and diffs
+- Lightweight desktop packaging on macOS and Windows
+- Windows startup behavior that opens the app directly without an extra console window
 
-| App | macOS ARM64 DMG | Windows x64 Setup |
-| --- | --- | --- |
-| **Soren Superman** | **`4.71 MB`** | **`3.3 MB`** |
-| Cursor | `248.91 MB` | — |
-| VS Code | `252.38 MB` | — |
+## Included Workspaces
 
-**Soren Superman ships in under 5 MB on both platforms.**
+- `AI Coding CLI`: start supported coding assistants and manage session-oriented work
+- `Terminal`: run native shell sessions and forward selected output into assistant context
+- `Editor`: inspect and edit files, including targeted code selection handoff
+- `Files`: browse local repositories from an integrated file tree
+- `Changes`: inspect repository modifications
+- `Diff`: review code deltas in a dedicated workspace
 
-This comparison reflects installer file size only, not runtime memory usage or full extracted app size.
+## Supported CLI Launchers
 
-## CLI Workflow Optimizations
+The launcher currently includes presets for:
 
-| Optimization | What it improves |
-| --- | --- |
-| Preset launcher tabs | Start a supported coding CLI from the UI instead of a blank shell |
-| Recent session resume | Resume Claude Code sessions without remembering resume commands |
-| Explorer to Claude Code context | Add files and folders from the file tree directly into Claude Code |
-| Batch add from Explorer | Send multiple selected items as context in one step |
-| Editor selection to Claude Code context | Send focused code directly from the editor |
-| Terminal output to Claude Code | Send selected logs or errors from Terminal into Claude Code |
-| Session-oriented launcher flow | New sessions and resumed sessions live in the same entry point |
-| Split AI / Terminal panes | Keep multiple sessions visible and manageable |
+- Claude Code
+- Codex
+- Gemini
+- OpenCode
+- Copilot
+- Cursor Agent
 
-Claude Code currently has the deepest workflow integration.
+Some integrations are deeper than others. Claude Code currently has the richest session-oriented workflow support.
 
-<div align="center">
-  <img alt="Adding selected files and code to CLI context from the workspace" src="docs/images/add-to-cli-context.png" width="1200" />
-</div>
+## Download
 
-## Core Workspaces
+Latest builds are published on GitHub Releases:
 
-| Workspace | What it does |
-| --- | --- |
-| AI Coding CLI | Launch supported coding CLIs, resume recent Claude Code sessions, split AI panes |
-| Terminal | Run native terminals, split panes, send selected terminal output to Claude Code |
-| Editor | Open files in tabs, split editing, use code or preview mode where supported, send selected code to Claude Code |
-| Files | Browse the local project with an integrated file tree |
-| Changes | Review repository changes inside the workspace |
-| Diff | Open a dedicated diff workspace for repository-level review |
+- Repository: [Sett1a/soren-superman](https://github.com/Sett1a/soren-superman)
+- Releases: [Download here](https://github.com/Sett1a/soren-superman/releases)
 
-## A Typical Workflow
+Current Windows release artifacts:
 
-| Step | Action |
-| --- | --- |
-| 1 | Open a local project |
-| 2 | Start a new coding CLI session or resume a previous Claude Code session |
-| 3 | Browse files in Explorer and open what you need in Editor |
-| 4 | Send files, folders, code selections, or terminal output into Claude Code |
-| 5 | Review the result in Editor, Changes, and Diff |
+- `Soren.Superman_0.0.3_x64-setup.exe`
+- `Soren.Superman_0.0.3_x64_en-US.msi`
 
-## Supported Coding CLIs
-
-| CLI | Current support |
-| --- | --- |
-| Claude Code | Preset launch, recent session resume, context handoff, strongest integration |
-| Codex | Preset launch |
-| Gemini | Preset launch |
-| OpenCode | Preset launch |
-| Copilot | Preset launch |
-| Cursor Agent | Preset launch |
-| Customization| support later |
-
-## Getting Started
+## Quick Start
 
 ### Prerequisites
 
 - [Bun](https://bun.sh/)
 - Rust toolchain
-- Tauri prerequisites for your target OS
-- Supported coding CLIs installed and available on `PATH`
+- Tauri prerequisites for your platform
+- The coding CLIs you want to launch available on `PATH`
 
-### Install
+### Install Dependencies
 
 ```bash
 bun install
 ```
 
-### Run in Development
+### Start Development Mode
 
 ```bash
 bun run tauri dev
 ```
 
-### Build Web Assets
+### Build the Frontend
 
 ```bash
 bun run build
 ```
 
-### Package macOS Installers
-
-```bash
-bun run build:dmg:all
-```
-
-Available commands:
-
-- `bun run build:dmg:arm64` for Apple Silicon
-- `bun run build:dmg:x64` for Intel
-- `bun run build:dmg:universal` for a universal macOS build
-- `bun run build:dmg:all` for all three variants
-
-Built DMGs are collected under:
-
-`src-tauri/target/release-artifacts/<version>/macos`
-
-### Package Windows Installers
+### Build Installers
 
 ```bash
 bun run tauri build
 ```
 
-Built installers are located at:
+Windows output paths:
 
-- NSIS: `src-tauri/target/release/bundle/nsis/Soren Superman_<version>_x64-setup.exe`
-- MSI: `src-tauri/target/release/bundle/msi/Soren Superman_<version>_x64_en-US.msi`
+- `src-tauri/target/release/bundle/nsis/Soren Superman_<version>_x64-setup.exe`
+- `src-tauri/target/release/bundle/msi/Soren Superman_<version>_x64_en-US.msi`
 
-### macOS Install Note
+macOS DMG helper commands:
 
-**Warning**
+- `bun run build:dmg:arm64`
+- `bun run build:dmg:x64`
+- `bun run build:dmg:universal`
+- `bun run build:dmg:all`
 
-Current GitHub Release builds are not notarized yet.
-If macOS blocks the installer or says the app is damaged, use the steps below.
+## Platform Notes
 
-1. Open the DMG and drag `Soren Superman.app` into `Applications`
-2. If the installed app is blocked on first launch, remove quarantine from the app first:
+### Windows
+
+Release installers are not code-signed yet. If SmartScreen shows a warning, choose `More info` and then `Run anyway`.
+
+This fork also includes a Windows packaging fix so the installed app opens as a GUI app instead of first spawning an extra terminal window.
+
+### macOS
+
+Release builds are not notarized yet. If macOS blocks the app after installation, remove quarantine:
 
 ```bash
 xattr -dr com.apple.quarantine "/Applications/Soren Superman.app"
 ```
 
-3. If step 2 does not fix it, or macOS blocks the downloaded DMG before you can open it, also remove quarantine from the DMG and try again:
-
-```bash
-xattr -dr com.apple.quarantine ~/Downloads/Soren_Superman_0.0.3_aarch64.dmg
-```
-
-**In most cases, step 2 is the only step required.**
-Step 3 is a fallback for cases where the app command alone is not enough, or the DMG itself is blocked.
-
-### Windows Install Note
-
-**Warning**
-
-Current GitHub Release builds are not code-signed.
-If Windows shows a "Windows protected your PC" SmartScreen warning when running the installer, click **More info** → **Run anyway**.
-
-## Design Philosophy
-
-| Principle | Meaning |
-| --- | --- |
-| Simple by default | The UI should stay out of the way |
-| Lightweight in feel | The workspace should feel focused, not bloated |
-| Powerful through composition | Terminals, files, editor, and diff should work together cleanly |
-| Terminal-native | The CLI stays real instead of being replaced by a fake chat abstraction |
-| Explicit context | Users should know what is being sent to the model |
-| Local-first | Built around real local projects and local development flow |
-
-## Current Limitations
-
-- Recent session resume is currently focused on Claude Code
-- Some integrations are CLI-specific rather than universal
-- External CLIs must already be installed and available on `PATH`
+If the DMG itself is blocked before you can install, remove quarantine from the downloaded DMG and try again.
 
 ## Tech Stack
 
-| Layer | Stack |
-| --- | --- |
-| Desktop shell | Tauri 2 |
-| Frontend | React 19 + Vite |
-| Terminal | xterm.js |
-| Editor | CodeMirror 6 |
-| UI | shadcn/ui, Radix UI, Base UI |
-| Backend | Rust for PTY and file operations |
+- Tauri 2
+- React 19
+- Vite
+- xterm.js
+- CodeMirror 6
+- Rust backend services for PTY and file operations
 
-## License
+## Project Status
 
-Soren Superman is licensed under the GNU General Public License v3.0.
+The app is usable today, but it is still early-stage software.
 
-See [LICENSE](./LICENSE) for the full text.
+Known limitations:
+
+- Session resume is strongest for Claude Code
+- Some launcher flows are preset-based rather than universally abstracted
+- External CLIs must be installed separately by the user
+
+## Origin And License
+
+Soren Superman is a GPL-licensed fork derived from the Supremum project, with additional Windows packaging fixes, branding changes, and release work maintained in this repository.
+
+License: [GNU GPL v3.0](./LICENSE)

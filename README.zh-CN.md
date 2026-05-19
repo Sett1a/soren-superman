@@ -1,108 +1,83 @@
-<div align="center">
+# Soren Superman
 
-<img width="full" alt="Soren Superman" src="docs/images/workspace-overview-ai-editor-terminal.png" />
+![Soren Superman 工作区预览](docs/images/workspace-overview-ai-editor-terminal.png)
 
-### 面向 AI 时代的简单、轻量但强大的 AI 代码编辑器。
+Soren Superman 是一个面向终端工作流的本地桌面应用，适合习惯直接使用 coding CLI，而不是只在网页聊天框里写代码的人。
 
-<sub><strong>Soren Superman v0.0.3 已发布。</strong> 现已支持 macOS 和 Windows，可在 <a href="https://github.com/Sett1a/soren-superman/releases">Releases</a> 下载。</sub>
+它不会替代真实终端，而是在终端外面补上一层更顺手的工作区能力：文件浏览、代码编辑、变更查看、Diff 审查，以及更省事的上下文传递。
 
-> <sub><strong>macOS 提醒：</strong> 如果 macOS 提示 `Soren Superman.app` 已损坏，或阻止它打开，请查看下方的 <a href="#macos-安装提醒">macOS 安装提醒</a> 获取说明。</sub>
->
-> <sub><strong>Windows 提醒：</strong> 如果 Windows 运行安装程序时弹出"Windows 已保护你的电脑"的 SmartScreen 提示，请查看下方的 <a href="#windows-安装提醒">Windows 安装提醒</a> 获取说明。</sub>
+## 它是做什么的
 
-</div>
+Soren Superman 的核心思路很直接：
 
+- 用桌面应用来启动常见 coding CLI，而不是每次都手动拼工作流
+- 在同一个界面里完成文件、编辑器、终端、变更和 Diff 之间的切换
+- 把文件、文件夹、代码选区、终端输出更快地送进 AI 会话
+- 需要并行工作时，可以保留多列面板同时查看
 
-## 为什么选择 Soren Superman？
+## 适合什么人
 
-Soren Superman 是一个围绕真实 coding CLI、真实终端、本地文件和集成代码审查打造的本地桌面工作区。
+如果你真正工作的核心还在 shell 里，而不是 IDE 的侧边功能里，这个项目会更适合你。
 
-它保留 CLI 原本的工作流，再在外层补上缺失的 UI。
+它的定位不是“大而全”的编辑器，而是一个围绕 CLI 搭起来的轻量控制台：
 
-| 问题 | Soren Superman 的做法 |
-| --- | --- |
-| Raw coding CLI 很强，但太手工 | 增加 launcher tabs、历史恢复、上下文传递和集成 review |
-| VS Code / Cursor 对 terminal-first 工作流来说偏重 | 用更轻的 workspace 包住真实终端会话 |
-| 文件、终端输出和 diff 是割裂的 | 把 Files、Editor、Changes、Diff 和 AI 会话放在同一个地方 |
-| 上下文传递太重复 | 可以直接把文件、文件夹、代码选区、终端输出发给 Claude Code |
-| 多会话很容易乱 | AI Coding CLI 和 Terminal 都支持横向分栏 |
+- 终端是真的终端
+- 本地项目是真的本地项目
+- UI 只负责把这些能力组织得更顺手
 
-## 安装包体积对比
+## 当前重点
 
-基于当前本地构建/下载的安装包：
+目前这份仓库主要聚焦在下面几件事上：
 
-| 应用 | macOS ARM64 DMG | Windows x64 Setup |
-| --- | --- | --- |
-| **Soren Superman** | **`4.71 MB`** | **`3.3 MB`** |
-| Cursor | `248.91 MB` | — |
-| VS Code | `252.38 MB` | — |
+- Claude Code 的启动与历史会话恢复
+- 本地文件、改动、Diff 的快速切换
+- macOS 与 Windows 的轻量桌面打包
+- Windows 安装版启动时直接打开主界面，不再先弹出额外终端窗口
 
-**Soren Superman 在两个平台上的安装包均不到 5 MB。**
+## 内置工作区
 
-这里对比的是安装包文件大小，不代表运行时内存占用或解压后的完整应用体积。
+- `AI Coding CLI`：启动支持的 AI 编码 CLI，并管理会话式工作流
+- `Terminal`：运行本地终端，并把选中的输出发给 AI
+- `Editor`：查看和编辑文件，支持把代码选区直接加入上下文
+- `Files`：浏览本地仓库文件树
+- `Changes`：查看 Git 改动
+- `Diff`：在独立视图里审查代码差异
 
-## 与 Coding CLI 的工作流集成
+## 当前内置的 CLI 启动项
 
-| 优化点 | 解决什么问题 |
-| --- | --- |
-| Preset launcher tabs | 从 UI 直接启动支持的 coding CLI，而不是先掉进空白 shell |
-| Recent session resume | 不用记住 resume 命令，也能恢复 Claude Code 会话 |
-| Explorer 到 Claude Code context | 从文件树直接把文件或文件夹加入 Claude Code |
-| Explorer 多选批量添加 | 一次发送多个上下文项 |
-| Editor 选区到 Claude Code context | 从编辑器直接发送局部代码 |
-| Terminal 输出到 Claude Code | 把错误、日志、命令输出直接发给 Claude Code |
-| 新会话和旧会话共用入口 | 启动与恢复都在同一个 launcher 流程里 |
-| AI / Terminal 分栏 | 并行工作时保持多个会话可见且清晰 |
+现在的 launcher 预置了这些入口：
 
-目前 Claude Code 的集成深度最高。
+- Claude Code
+- Codex
+- Gemini
+- OpenCode
+- Copilot
+- Cursor Agent
 
-<div align="center">
-  <img alt="从工作区把选中的文件和代码加入 CLI 上下文" src="docs/images/add-to-cli-context.png" width="1200" />
-</div>
+不同 CLI 的集成深度并不完全一样，目前 Claude Code 的工作流支持最完整。
 
-## 核心工作区
+## 下载
 
-| 工作区 | 作用 |
-| --- | --- |
-| AI Coding CLI | 启动支持的 coding CLI、恢复最近的 Claude Code 会话、横向分栏多个 AI pane |
-| Terminal | 运行原生终端、横向分栏、把选中的终端输出发送给 Claude Code |
-| Editor | 以 tab 打开文件、横向分栏编辑、在支持的场景下使用 code / preview 模式、发送选中的代码给 Claude Code |
-| Files | 用集成文件树浏览本地项目 |
-| Changes | 在工作区中查看仓库变更 |
-| Diff | 打开专门的 diff 工作区做代码审查 |
+当前仓库与发布地址：
 
-## 一个典型工作流
+- 仓库：[Sett1a/soren-superman](https://github.com/Sett1a/soren-superman)
+- Release：[点这里下载](https://github.com/Sett1a/soren-superman/releases)
 
-| 步骤 | 动作 |
-| --- | --- |
-| 1 | 打开本地项目 |
-| 2 | 启动新的 coding CLI 会话，或者恢复之前的 Claude Code 会话 |
-| 3 | 在 Explorer 浏览文件，并在 Editor 中打开需要的内容 |
-| 4 | 把文件、文件夹、代码选区或终端输出发送给 Claude Code |
-| 5 | 在 Editor、Changes 和 Diff 中审查结果 |
+当前 Windows 安装包文件名：
 
-## 当前支持的 Coding CLI
-
-| CLI | 当前支持情况 |
-| --- | --- |
-| Claude Code | 支持 preset 启动、历史恢复、上下文传递，集成最完整 |
-| Codex | 支持 preset 启动 |
-| Gemini | 支持 preset 启动 |
-| OpenCode | 支持 preset 启动 |
-| Copilot | 支持 preset 启动 |
-| Cursor Agent | 支持 preset 启动 |
-| Customization | 后续支持 |
+- `Soren.Superman_0.0.3_x64-setup.exe`
+- `Soren.Superman_0.0.3_x64_en-US.msi`
 
 ## 快速开始
 
-### 前置依赖
+### 环境依赖
 
 - [Bun](https://bun.sh/)
 - Rust toolchain
 - 当前平台所需的 Tauri 依赖
-- 已安装并可通过 `PATH` 调用的 coding CLI
+- 你想启动的 coding CLI，并且它们需要已经在 `PATH` 中可用
 
-### 安装
+### 安装依赖
 
 ```bash
 bun install
@@ -114,100 +89,69 @@ bun install
 bun run tauri dev
 ```
 
-### 构建前端产物
+### 构建前端
 
 ```bash
 bun run build
 ```
 
-### 打包 macOS 安装包
-
-```bash
-bun run build:dmg:all
-```
-
-可用命令：
-
-- `bun run build:dmg:arm64` 用于 Apple Silicon
-- `bun run build:dmg:x64` 用于 Intel
-- `bun run build:dmg:universal` 用于通用 macOS 版本
-- `bun run build:dmg:all` 一次构建三个版本
-
-构建后的 DMG 会统一收集到：
-
-`src-tauri/target/release-artifacts/<version>/macos`
-
-### 打包 Windows 安装包
+### 打包安装程序
 
 ```bash
 bun run tauri build
 ```
 
-构建产物位于：
+Windows 产物默认位于：
 
-- NSIS 安装包：`src-tauri/target/release/bundle/nsis/Soren Superman_<version>_x64-setup.exe`
-- MSI 安装包：`src-tauri/target/release/bundle/msi/Soren Superman_<version>_x64_en-US.msi`
+- `src-tauri/target/release/bundle/nsis/Soren Superman_<version>_x64-setup.exe`
+- `src-tauri/target/release/bundle/msi/Soren Superman_<version>_x64_en-US.msi`
 
-### macOS 安装提醒
+macOS DMG 相关命令：
 
-**警告**
+- `bun run build:dmg:arm64`
+- `bun run build:dmg:x64`
+- `bun run build:dmg:universal`
+- `bun run build:dmg:all`
 
-当前 GitHub Release 提供的 macOS 安装包还没有完成 notarization。
-如果 macOS 提示安装包或应用“已损坏”或阻止打开，请按下面步骤处理。
+## 平台说明
 
-1. 打开 DMG，把 `Soren Superman.app` 拖到 `Applications`
-2. 如果第一次启动时拦的是安装后的应用，先给应用本体移除 quarantine：
+### Windows
+
+当前 Release 安装包还没有代码签名。如果 SmartScreen 弹出警告，点 `More info` 再点 `Run anyway` 即可继续。
+
+这个分支还包含了一个 Windows 打包修复：安装后的应用会直接作为 GUI 程序启动，而不会先弹出一个额外终端窗口。
+
+### macOS
+
+当前 Release 还没有做 notarization。如果系统阻止应用启动，可以手动去掉 quarantine：
 
 ```bash
 xattr -dr com.apple.quarantine "/Applications/Soren Superman.app"
 ```
 
-3. 如果第 2 步还不行，或者 DMG 还没打开就被系统拦截，再给 DMG 移除 quarantine 后重试：
-
-```bash
-xattr -dr com.apple.quarantine ~/Downloads/Soren_Superman_0.0.3_aarch64.dmg
-```
-
-**大多数情况下，只需要执行第 2 步。**
-第 3 步是补充兜底，用在 app 命令仍然无效，或者 DMG 本身先被系统拦截的情况。
-
-### Windows 安装提醒
-
-**警告**
-
-当前 GitHub Release 提供的 Windows 安装包未进行代码签名。
-如果 Windows 运行安装程序时弹出"Windows 已保护你的电脑"的 SmartScreen 提示，点击 **更多信息** → **仍要运行**。
-
-## 设计哲学
-
-| 原则 | 含义 |
-| --- | --- |
-| 默认简单 | UI 不应该干扰工作流 |
-| 整体轻量 | 工作区应该聚焦，而不是臃肿 |
-| 通过组合获得强大 | 终端、文件、编辑器和 diff 要自然协同 |
-| Terminal-native | 保留真实 CLI，而不是用假的聊天抽象替代它 |
-| 显式上下文 | 用户应该知道自己发送了什么给模型 |
-| Local-first | 围绕真实本地项目和本地开发流程设计 |
-
-## 当前限制
-
-- 历史会话恢复目前主要围绕 Claude Code
-- 部分能力是 CLI 特定的，而不是所有 CLI 完全一致
-- 外部 CLI 需要用户自行安装，并确保可以通过 `PATH` 调用
+如果是 DMG 本身在安装前就被系统拦截，也可以先对下载下来的 DMG 执行同样处理后再试。
 
 ## 技术栈
 
-| 层级 | 技术 |
-| --- | --- |
-| Desktop shell | Tauri 2 |
-| Frontend | React 19 + Vite |
-| Terminal | xterm.js |
-| Editor | CodeMirror 6 |
-| UI | shadcn/ui、Radix UI、Base UI |
-| Backend | Rust，用于 PTY 和文件操作 |
+- Tauri 2
+- React 19
+- Vite
+- xterm.js
+- CodeMirror 6
+- Rust 后端 PTY 与文件操作能力
 
-## 许可证
+## 项目现状
 
-Soren Superman 使用 GNU General Public License v3.0 许可证。
+这个项目已经可以实际使用，但目前仍然属于早期版本。
 
-完整文本请见 [LICENSE](./LICENSE)。
+当前限制包括：
+
+- 历史会话恢复目前主要围绕 Claude Code
+- 某些 launcher 集成还是预置式支持，而不是完全统一抽象
+- 外部 CLI 需要用户自行安装
+
+## 来源与许可
+
+Soren Superman 是基于 Supremum 派生出来的 GPL 分支，在这个仓库中继续维护了 Windows 打包修复、品牌更新和新的发布流程。
+
+许可证：[GNU GPL v3.0](./LICENSE)
