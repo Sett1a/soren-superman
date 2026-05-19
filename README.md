@@ -65,8 +65,8 @@ Latest builds are published on GitHub Releases:
 
 Current Windows release artifacts:
 
-- `Soren.Superman_0.0.3_x64-setup.exe`
-- `Soren.Superman_0.0.3_x64_en-US.msi`
+- `Soren.Superman_0.0.4_x64-setup.exe`
+- `Soren.Superman_0.0.4_x64_en-US.msi`
 
 ## Quick Start
 

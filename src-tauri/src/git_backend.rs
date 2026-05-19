@@ -7,8 +7,13 @@ use std::{
     process::{Command, Output},
 };
 
+#[cfg(target_os = "windows")]
+use std::os::windows::process::CommandExt;
+
 const MAX_DIFF_BYTES: usize = 1_500_000;
 const MAX_UNTRACKED_LINE_COUNT_BYTES: u64 = 512 * 1024;
+#[cfg(target_os = "windows")]
+const CREATE_NO_WINDOW: u32 = 0x0800_0000;
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -724,8 +729,15 @@ fn ensure_git_is_installed() -> Result<(), String> {
     ensure_git_binary().map(|_| ())
 }
 
+fn git_command() -> Command {
+    let mut command = Command::new("git");
+    #[cfg(target_os = "windows")]
+    command.creation_flags(CREATE_NO_WINDOW);
+    command
+}
+
 fn ensure_git_binary() -> Result<Output, String> {
-    Command::new("git")
+    git_command()
         .arg("--version")
         .output()
         .map_err(|_| "Git is not installed or not available in PATH.".to_string())
@@ -751,10 +763,8 @@ where
     I: IntoIterator<Item = S>,
     S: AsRef<OsStr>,
 {
-    Command::new("git")
-        .current_dir(workspace)
-        .args(args)
-        .output()
+    let mut command = git_command();
+    command.current_dir(workspace).args(args).output()
 }
 
 fn run_git_checked<I, S>(workspace: &Path, args: I) -> Result<Output, String>

@@ -65,8 +65,8 @@ Soren Superman 的核心思路很直接：
 
 当前 Windows 安装包文件名：
 
-- `Soren.Superman_0.0.3_x64-setup.exe`
-- `Soren.Superman_0.0.3_x64_en-US.msi`
+- `Soren.Superman_0.0.4_x64-setup.exe`
+- `Soren.Superman_0.0.4_x64_en-US.msi`
 
 ## 快速开始
 

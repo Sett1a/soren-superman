@@ -101,12 +101,14 @@ type TerminalTab = {
 
 type BranchCreateMode = "none" | "current" | "from";
 type WorkspaceSplitOrientation = "horizontal" | "vertical";
+type EmbeddedWorkspaceKind = "agent" | "terminal" | "editor" | "diff";
 
 type NativeTerminalPaneLeaf = {
   id: string;
   type: "leaf";
   tabIds: string[];
   activeTabId: string | null;
+  workspaceKind?: EmbeddedWorkspaceKind | null;
 };
 
 type NativeTerminalPaneSplit = {
@@ -681,6 +683,36 @@ function splitNativeTerminalPane(
   };
 }
 
+function setWorkspaceKindInPane(
+  node: NativeTerminalPaneNode | null,
+  paneId: string,
+  workspaceKind: EmbeddedWorkspaceKind | null
+): NativeTerminalPaneNode | null {
+  if (!node) return null;
+
+  if (node.type === "leaf") {
+    if (node.id !== paneId || node.workspaceKind === workspaceKind) {
+      return node;
+    }
+
+    return {
+      ...node,
+      workspaceKind,
+    };
+  }
+
+  const left = setWorkspaceKindInPane(node.children[0], paneId, workspaceKind);
+  const right = setWorkspaceKindInPane(node.children[1], paneId, workspaceKind);
+  if (left === node.children[0] && right === node.children[1]) {
+    return node;
+  }
+
+  return {
+    ...node,
+    children: [left ?? node.children[0], right ?? node.children[1]],
+  };
+}
+
 function collectTabsFromNativeTerminalPane(node: NativeTerminalPaneNode): {
   tabIds: string[];
   activeTabId: string | null;
@@ -1240,7 +1272,11 @@ export function MainLayout() {
     }
   }, [branchCreateSource, git.capability?.status, workspacePath]);
 
-  const createAgentWorkspacePaneLeaf = useCallback((tabIds: string[] = [], activeTabId: string | null = null) => {
+  const createAgentWorkspacePaneLeaf = useCallback((
+    tabIds: string[] = [],
+    activeTabId: string | null = null,
+    workspaceKind: EmbeddedWorkspaceKind | null = tabIds.length > 0 ? "agent" : null
+  ) => {
     const nextIndex = agentWorkspacePaneCounterRef.current;
     agentWorkspacePaneCounterRef.current += 1;
     return {
@@ -1248,6 +1284,7 @@ export function MainLayout() {
       type: "leaf" as const,
       tabIds,
       activeTabId,
+      workspaceKind,
     };
   }, []);
 
@@ -1279,6 +1316,36 @@ export function MainLayout() {
     editorWorkspaceGroupCounterRef.current += 1;
     return createWorkspaceTabGroup(`editor-group-${nextIndex}`);
   }, []);
+
+  const resolveAgentWorkspaceTargetPane = useCallback((
+    tree: NativeTerminalPaneNode | null,
+    preferredPaneId?: string | null
+  ) => {
+    if (!tree) return null;
+
+    const panes = collectNativeTerminalLeafPanes(tree);
+    const isAgentCompatible = (pane: NativeTerminalPaneLeaf) =>
+      pane.workspaceKind === undefined || pane.workspaceKind === null || pane.workspaceKind === "agent";
+
+    const preferredPane =
+      (preferredPaneId && findNativeTerminalLeafById(tree, preferredPaneId)) ?? null;
+    if (preferredPane && isAgentCompatible(preferredPane)) {
+      return preferredPane;
+    }
+
+    const activePane =
+      (activeAgentWorkspacePaneId && findNativeTerminalLeafById(tree, activeAgentWorkspacePaneId)) ?? null;
+    if (activePane && isAgentCompatible(activePane)) {
+      return activePane;
+    }
+
+    return (
+      panes.find((pane) => pane.workspaceKind === null && pane.tabIds.length === 0) ??
+      panes.find((pane) => pane.workspaceKind === "agent" && pane.tabIds.length === 0) ??
+      panes.find((pane) => isAgentCompatible(pane)) ??
+      null
+    );
+  }, [activeAgentWorkspacePaneId]);
 
   const handleTabsWheel = useCallback((event: WheelEvent<HTMLDivElement>) => {
     if (Math.abs(event.deltaX) > Math.abs(event.deltaY)) return;
@@ -1849,12 +1916,7 @@ export function MainLayout() {
           return nextPane;
         }
 
-        const targetPane =
-          (targetGroupId && findNativeTerminalLeafById(currentTree, targetGroupId)) ??
-          (activeAgentWorkspacePaneId && findNativeTerminalLeafById(currentTree, activeAgentWorkspacePaneId)) ??
-          collectNativeTerminalLeafPanes(currentTree).find((pane) => pane.tabIds.length === 0) ??
-          collectNativeTerminalLeafPanes(currentTree)[0] ??
-          null;
+        const targetPane = resolveAgentWorkspaceTargetPane(currentTree, targetGroupId ?? null);
 
         if (!targetPane) {
           const nextPane = createAgentWorkspacePaneLeaf([id], id);
@@ -1863,12 +1925,16 @@ export function MainLayout() {
         }
 
         setActiveAgentWorkspacePaneId(targetPane.id);
-        return appendTabToNativeTerminalPane(currentTree, targetPane.id, id);
+        return appendTabToNativeTerminalPane(
+          setWorkspaceKindInPane(currentTree, targetPane.id, "agent"),
+          targetPane.id,
+          id
+        );
       });
       setActiveAgentTerminalId(id);
       setActiveWorkspace("agent");
     },
-    [activeAgentWorkspacePaneId, createAgentWorkspacePaneLeaf, workspacePath]
+    [createAgentWorkspacePaneLeaf, resolveAgentWorkspaceTargetPane, workspacePath]
   );
 
   const handleCreateAgentTerminalWithCommands = useCallback(
@@ -1912,11 +1978,7 @@ export function MainLayout() {
           return replaceTabInPaneTree(currentTree, source.groupId, source.tabId, id);
         }
 
-        const targetPane =
-          (source?.groupId && findNativeTerminalLeafById(currentTree, source.groupId)) ??
-          (activeAgentWorkspacePaneId && findNativeTerminalLeafById(currentTree, activeAgentWorkspacePaneId)) ??
-          collectNativeTerminalLeafPanes(currentTree)[0] ??
-          null;
+        const targetPane = resolveAgentWorkspaceTargetPane(currentTree, source?.groupId ?? null);
 
         if (!targetPane) {
           const nextPane = createAgentWorkspacePaneLeaf([id], id);
@@ -1925,12 +1987,16 @@ export function MainLayout() {
         }
 
         setActiveAgentWorkspacePaneId(targetPane.id);
-        return appendTabToNativeTerminalPane(currentTree, targetPane.id, id);
+        return appendTabToNativeTerminalPane(
+          setWorkspaceKindInPane(currentTree, targetPane.id, "agent"),
+          targetPane.id,
+          id
+        );
       });
       setActiveAgentTerminalId(id);
       setActiveWorkspace("agent");
     },
-    [activeAgentWorkspacePaneId, createAgentWorkspacePaneLeaf, terminalTabs, workspacePath]
+    [createAgentWorkspacePaneLeaf, resolveAgentWorkspaceTargetPane, terminalTabs, workspacePath]
   );
 
   const handleCreateAgentTerminal = useCallback(
@@ -2551,6 +2617,23 @@ export function MainLayout() {
     setActiveEditorWorkspaceGroupId(nextGroup.id);
     setActiveTabId(sourceTabId);
   }, [activeTabId, createEditorWorkspaceGroup, editorLayoutMode, editorWorkspaceGroups, openTabs]);
+
+  const handleChooseEmbeddedWorkspace = useCallback((
+    paneId: string,
+    workspaceKind: EmbeddedWorkspaceKind
+  ) => {
+    setActiveAgentWorkspacePaneId(paneId);
+
+    if (workspaceKind === "agent") {
+      handleCreateAgentLauncherTab(paneId);
+      return;
+    }
+
+    setAgentWorkspacePaneTree((currentTree) =>
+      setWorkspaceKindInPane(currentTree, paneId, workspaceKind)
+    );
+    setActiveAgentTerminalId(null);
+  }, [handleCreateAgentLauncherTab]);
 
   const handleCloseAgentWorkspaceGroup = useCallback((groupId: string) => {
     setAgentWorkspacePaneTree((currentTree) => closeNativeTerminalPane(currentTree, groupId));
@@ -3336,6 +3419,922 @@ export function MainLayout() {
         )
       : null;
 
+  const renderEmbeddedTerminalWorkspace = useCallback((): ReactNode => {
+    if (nativeTerminalTabs.length > 0) {
+      return nativeTerminalPaneTree ? renderNativeTerminalPane(nativeTerminalPaneTree) : null;
+    }
+
+    return (
+      <div className="terminal-shell terminal-shell-empty">
+        <div className="terminal-tabs-bar terminal-tabs-bar-empty">
+          <div className="terminal-tabs-empty-label">No terminal yet</div>
+          <div className="terminal-tabs-actions">
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-xs"
+              className="terminal-tab-create"
+              onClick={() => handleCreateTerminal()}
+              aria-label="New terminal"
+            >
+              <Plus className="size-3.5" />
+            </Button>
+          </div>
+        </div>
+        <div className="terminal-stage">
+          <WorkspaceEmptyState
+            visual={<SquareTerminal className="workspace-empty-icon" />}
+            title="Workspace ready"
+            description="Open a terminal only when you need one. Keep the canvas clean until there is actual work to run."
+            meta={workspaceDisplayPath ? `Workspace: ${workspaceDisplayPath}` : undefined}
+            actions={[
+              {
+                icon: <SquareTerminal className="size-4" />,
+                label: "New Terminal",
+                hint: "create",
+                onClick: handleCreateTerminal,
+                emphasis: true,
+              },
+            ]}
+          />
+        </div>
+      </div>
+    );
+  }, [
+    handleCreateTerminal,
+    nativeTerminalPaneTree,
+    nativeTerminalTabs.length,
+    workspaceDisplayPath,
+  ]);
+
+  const renderEmbeddedEditorWorkspace = useCallback((): ReactNode => {
+    return (
+      <div className="code-workspace">
+        <div className="code-workspace-inner">
+          {editorLayoutMode === "split" && editorWorkspaceGroupsForRender.length > 0 ? (
+            <ResizablePanelGroup orientation="horizontal" className="workspace-split-layout">
+              {editorWorkspaceGroupsForRender.map((group, groupIndex) => {
+                const activeGroupTab =
+                  group.tabs.find((tab) => tab.id === group.activeTabId) ?? group.tabs[0] ?? null;
+                const activeGroupMode =
+                  activeGroupTab && isPreviewablePath(activeGroupTab.path)
+                    ? supportsCodeViewForPath(activeGroupTab.path)
+                      ? (editorViewModes[activeGroupTab.id] ?? "preview")
+                      : "preview"
+                    : "code";
+
+                return (
+                  <Fragment key={group.id}>
+                    <ResizablePanel
+                      defaultSize={100 / editorWorkspaceGroupsForRender.length}
+                      minSize={22}
+                      className="workspace-split-panel"
+                    >
+                      <div
+                        className="workspace-split-group"
+                        data-active={group.id === activeEditorWorkspaceGroupId ? "true" : undefined}
+                        onMouseDown={() => {
+                          setActiveEditorWorkspaceGroupId(group.id);
+                          setActiveTabId(activeGroupTab?.id ?? null);
+                        }}
+                      >
+                        {activeGroupTab ? (
+                          <Tabs
+                            value={activeGroupTab.id}
+                            onValueChange={(tabId) => {
+                              handleActivateEditorWorkspaceTab(group.id, tabId);
+                            }}
+                            className="flex h-full min-h-0 w-full flex-1 flex-col gap-0"
+                          >
+                            <div className="editor-header">
+                              <div className="code-tabs-bar">
+                                <ScrollArea
+                                  className="code-tabs-scroll min-w-0 flex-1"
+                                  onWheel={handleTabsWheel}
+                                >
+                                  <TabsList
+                                    variant="line"
+                                    className="code-tabs-list min-w-max rounded-none border-0 bg-transparent p-0"
+                                  >
+                                    {group.tabs.map((tab) => {
+                                      const isDirty = tab.content !== tab.savedContent;
+                                      const tabLabel = getTabName(tab.path);
+                                      return (
+                                        <Tooltip key={`${group.id}:${tab.id}`}>
+                                          <TooltipTrigger
+                                            render={
+                                              <TabsTrigger
+                                                value={tab.id}
+                                                className="code-tab group !flex-none justify-start gap-1.5 rounded-none border-0 px-2.5 py-0.5 after:hidden"
+                                                data-draggable="true"
+                                                data-editor-group-id={group.id}
+                                                data-editor-tab-id={tab.id}
+                                                data-dragging={
+                                                  draggedEditorTab?.groupId === group.id &&
+                                                  draggedEditorTab?.tabId === tab.id
+                                                    ? "true"
+                                                    : undefined
+                                                }
+                                                data-drop-target={
+                                                  editorTabDropTarget?.groupId === group.id &&
+                                                  editorTabDropTarget?.tabId === tab.id
+                                                    ? "true"
+                                                    : undefined
+                                                }
+                                                data-drop-edge={
+                                                  editorTabDropTarget?.groupId === group.id &&
+                                                  editorTabDropTarget?.tabId === tab.id
+                                                    ? editorTabDropTarget.edge
+                                                    : undefined
+                                                }
+                                                onPointerDown={(event) => {
+                                                  handleEditorTabPointerDown(group.id, tab.id, event);
+                                                }}
+                                                onClickCapture={handleEditorTabClickCapture}
+                                              >
+                                                <EditorFileIcon path={tab.path} />
+                                                {isDirty ? (
+                                                  <Circle className="size-2 fill-current stroke-none text-cyan-300" />
+                                                ) : null}
+                                                <span className="code-tab-label truncate">{tabLabel}</span>
+                                                <span
+                                                  role="button"
+                                                  tabIndex={0}
+                                                  className="code-tab-close"
+                                                  onClick={(event) => {
+                                                    event.preventDefault();
+                                                    event.stopPropagation();
+                                                    handleCloseTab(tab.id, group.id);
+                                                  }}
+                                                  onKeyDown={(event) => {
+                                                    if (event.key !== "Enter" && event.key !== " ") return;
+                                                    event.preventDefault();
+                                                    event.stopPropagation();
+                                                    handleCloseTab(tab.id, group.id);
+                                                  }}
+                                                  aria-label={`Close ${tabLabel}`}
+                                                >
+                                                  <X className="size-3.5" />
+                                                </span>
+                                              </TabsTrigger>
+                                            }
+                                          />
+                                          <TooltipContent>{tab.path}</TooltipContent>
+                                        </Tooltip>
+                                      );
+                                    })}
+                                  </TabsList>
+                                  <ScrollBar orientation="horizontal" />
+                                </ScrollArea>
+                                <div className="code-workspace-tabs-actions">
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="icon-xs"
+                                    className="code-workspace-close"
+                                    onClick={() => handleSplitEditorWorkspaceGroup(group.id)}
+                                    aria-label="Split editor group"
+                                  >
+                                    <Columns2 className="size-3.5" />
+                                  </Button>
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="icon-xs"
+                                    className="code-workspace-close"
+                                    onClick={handleCloseAllEditorTabs}
+                                    aria-label="Close all editor tabs"
+                                  >
+                                    <X className="size-3.5" />
+                                  </Button>
+                                </div>
+                              </div>
+                              <ActivePathBar
+                                path={activeGroupTab.path}
+                                previewKind={getPreviewKind(activeGroupTab.path)}
+                                supportsCodeView={supportsCodeViewForPath(activeGroupTab.path)}
+                                mode={activeGroupMode}
+                                onModeChange={(mode) => {
+                                  handleSetEditorViewMode(activeGroupTab.id, mode);
+                                }}
+                              />
+                            </div>
+                            <div className="editor-content">
+                              <CodeEditor
+                                path={activeGroupTab.path}
+                                workspacePath={workspacePath}
+                                content={activeGroupTab.content}
+                                dirty={activeGroupTab.content !== activeGroupTab.savedContent}
+                                mode={activeGroupMode}
+                                canAddSelectionToClaude={canAddClaudeContext}
+                                onAddSelectionToClaude={handleAddClaudeSelection}
+                                onSelectionChange={(_path, selection) => {
+                                  handleEditorSelectionChange(group.id, activeGroupTab.id, selection);
+                                }}
+                                onChange={handleChange}
+                                onSave={handleSave}
+                              />
+                            </div>
+                          </Tabs>
+                        ) : (
+                          <div className="terminal-shell terminal-group-shell">
+                            <div className="code-tabs-bar">
+                              <div className="terminal-tabs-empty-label">Empty split</div>
+                              <div className="code-workspace-tabs-actions">
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon-xs"
+                                  className="code-workspace-close"
+                                  onClick={() => handleSplitEditorWorkspaceGroup(group.id)}
+                                  aria-label="Split editor group"
+                                >
+                                  <Columns2 className="size-3.5" />
+                                </Button>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon-xs"
+                                  className="code-workspace-close"
+                                  onClick={handleCloseAllEditorTabs}
+                                  aria-label="Close all editor tabs"
+                                >
+                                  <X className="size-3.5" />
+                                </Button>
+                              </div>
+                            </div>
+                            <div className="workspace-group-empty-state">
+                              <div className="workspace-group-empty-title">Empty editor pane</div>
+                              <div className="workspace-group-empty-description">
+                                Open a file from the Files panel into this split.
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </ResizablePanel>
+                    {groupIndex < editorWorkspaceGroupsForRender.length - 1 ? (
+                      <ResizableHandle withHandle className="workspace-split-handle" />
+                    ) : null}
+                  </Fragment>
+                );
+              })}
+            </ResizablePanelGroup>
+          ) : activeTab ? (
+            <Tabs
+              value={activeTab.id}
+              onValueChange={setActiveTabId}
+              className="flex h-full min-h-0 w-full flex-1 flex-col gap-0"
+            >
+              <div className="editor-header">
+                <div className="code-tabs-bar">
+                  <ScrollArea className="code-tabs-scroll min-w-0 flex-1" onWheel={handleTabsWheel}>
+                    <TabsList
+                      variant="line"
+                      className="code-tabs-list min-w-max rounded-none border-0 bg-transparent p-0"
+                    >
+                      {openTabs.map((tab) => {
+                        const isDirty = tab.content !== tab.savedContent;
+                        const tabLabel = getTabName(tab.path);
+                        return (
+                          <Tooltip key={tab.id}>
+                            <TooltipTrigger
+                              render={
+                                <TabsTrigger
+                                  value={tab.id}
+                                  className="code-tab group !flex-none justify-start gap-1.5 rounded-none border-0 px-2.5 py-0.5 after:hidden"
+                                  data-draggable="true"
+                                  data-editor-tab-id={tab.id}
+                                  data-dragging={
+                                    draggedEditorTab?.groupId === null &&
+                                    draggedEditorTab?.tabId === tab.id
+                                      ? "true"
+                                      : undefined
+                                  }
+                                  data-drop-target={
+                                    editorTabDropTarget?.groupId === null &&
+                                    editorTabDropTarget?.tabId === tab.id
+                                      ? "true"
+                                      : undefined
+                                  }
+                                  data-drop-edge={
+                                    editorTabDropTarget?.groupId === null &&
+                                    editorTabDropTarget?.tabId === tab.id
+                                      ? editorTabDropTarget.edge
+                                      : undefined
+                                  }
+                                  onPointerDown={(event) => {
+                                    handleEditorTabPointerDown(null, tab.id, event);
+                                  }}
+                                  onClickCapture={handleEditorTabClickCapture}
+                                >
+                                  <EditorFileIcon path={tab.path} />
+                                  {isDirty ? (
+                                    <Circle className="size-2 fill-current stroke-none text-cyan-300" />
+                                  ) : null}
+                                  <span className="code-tab-label truncate">{tabLabel}</span>
+                                  <span
+                                    role="button"
+                                    tabIndex={0}
+                                    className="code-tab-close"
+                                    onClick={(event) => {
+                                      event.preventDefault();
+                                      event.stopPropagation();
+                                      handleCloseTab(tab.id);
+                                    }}
+                                    onKeyDown={(event) => {
+                                      if (event.key !== "Enter" && event.key !== " ") return;
+                                      event.preventDefault();
+                                      event.stopPropagation();
+                                      handleCloseTab(tab.id);
+                                    }}
+                                    aria-label={`Close ${tabLabel}`}
+                                  >
+                                    <X className="size-3.5" />
+                                  </span>
+                                </TabsTrigger>
+                              }
+                            />
+                            <TooltipContent>{tab.path}</TooltipContent>
+                          </Tooltip>
+                        );
+                      })}
+                    </TabsList>
+                    <ScrollBar orientation="horizontal" />
+                  </ScrollArea>
+                  <div className="code-workspace-tabs-actions">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon-xs"
+                      className="code-workspace-close"
+                      onClick={() => handleSplitEditorWorkspaceGroup()}
+                      aria-label="Split editor group"
+                    >
+                      <Columns2 className="size-3.5" />
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon-xs"
+                      className="code-workspace-close"
+                      onClick={handleCloseAllEditorTabs}
+                      aria-label="Close all editor tabs"
+                    >
+                      <X className="size-3.5" />
+                    </Button>
+                  </div>
+                </div>
+                <ActivePathBar
+                  path={activeTab.path}
+                  previewKind={getPreviewKind(activeTab.path)}
+                  supportsCodeView={supportsCodeViewForPath(activeTab.path)}
+                  mode={activeEditorMode}
+                  onModeChange={(mode) => {
+                    handleSetEditorViewMode(activeTab.id, mode);
+                  }}
+                />
+              </div>
+              <div className="editor-content">
+                <CodeEditor
+                  path={activeTab.path}
+                  workspacePath={workspacePath}
+                  content={activeTab.content}
+                  dirty={activeTab.content !== activeTab.savedContent}
+                  mode={activeEditorMode}
+                  canAddSelectionToClaude={canAddClaudeContext}
+                  onAddSelectionToClaude={handleAddClaudeSelection}
+                  onSelectionChange={(_path, selection) => {
+                    handleEditorSelectionChange(null, activeTab.id, selection);
+                  }}
+                  onChange={handleChange}
+                  onSave={handleSave}
+                />
+              </div>
+            </Tabs>
+          ) : (
+            <div className="terminal-shell terminal-shell-empty">
+              <div className="terminal-tabs-bar terminal-tabs-bar-empty">
+                <div className="terminal-tabs-empty-label">No file open yet</div>
+              </div>
+              <div className="terminal-stage">
+                <WorkspaceEmptyState
+                  visual={<FolderOpen className="workspace-empty-icon" />}
+                  title="Editor is empty"
+                  description="Choose a file from the Files panel when you want to edit. Until then, this space stays quiet and focused."
+                  meta={workspaceDisplayPath ? `Workspace: ${workspaceDisplayPath}` : undefined}
+                />
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }, [
+    activeEditorMode,
+    activeEditorWorkspaceGroupId,
+    activeTab,
+    canAddClaudeContext,
+    draggedEditorTab,
+    editorLayoutMode,
+    editorTabDropTarget,
+    editorViewModes,
+    editorWorkspaceGroupsForRender,
+    handleActivateEditorWorkspaceTab,
+    handleAddClaudeSelection,
+    handleChange,
+    handleCloseAllEditorTabs,
+    handleCloseTab,
+    handleEditorSelectionChange,
+    handleEditorTabClickCapture,
+    handleEditorTabPointerDown,
+    handleSave,
+    handleSetEditorViewMode,
+    handleSplitEditorWorkspaceGroup,
+    handleTabsWheel,
+    openTabs,
+    setActiveEditorWorkspaceGroupId,
+    setActiveTabId,
+    workspaceDisplayPath,
+    workspacePath,
+  ]);
+
+  const renderEmbeddedDiffWorkspace = useCallback((): ReactNode => {
+    return (
+      <div className="diff-workspace">
+        <div className="diff-workspace-inner">
+          {activeDiffTab ? (
+            <Tabs
+              value={activeDiffTab.id}
+              onValueChange={setActiveDiffTabId}
+              className="flex h-full min-h-0 flex-col gap-0"
+            >
+              <div className="editor-header">
+                <div className="diff-tabs-bar">
+                  <ScrollArea
+                    className="diff-tabs-scroll min-w-0 flex-1"
+                    onWheel={handleTabsWheel}
+                  >
+                    <TabsList
+                      variant="line"
+                      className="diff-tabs-list min-w-max rounded-none border-0 bg-transparent p-0"
+                    >
+                      {diffTabs.map((tab) => {
+                        const tabLabel =
+                          tab.kind === "all"
+                            ? `All Changes (${totalChangedFiles} files)`
+                            : getDiffTabLabel(tab.file, tab.category);
+                        const tooltipLabel =
+                          tab.kind === "all"
+                            ? "Open all changes"
+                            : `${tab.file.path} • ${getDiffSideLabels(tab.file, tab.category).tabSource}`;
+                        return (
+                          <Tooltip key={tab.id}>
+                            <TooltipTrigger
+                              render={
+                                <TabsTrigger
+                                  value={tab.id}
+                                  className="diff-tab group !flex-none justify-start gap-1.5 rounded-none border-0 px-2.5 py-0.5 after:hidden"
+                                  data-draggable="true"
+                                  data-diff-tab-id={tab.id}
+                                  data-dragging={
+                                    draggedDiffTab?.tabId === tab.id ? "true" : undefined
+                                  }
+                                  data-drop-target={
+                                    diffTabDropTarget?.tabId === tab.id ? "true" : undefined
+                                  }
+                                  data-drop-edge={
+                                    diffTabDropTarget?.tabId === tab.id
+                                      ? diffTabDropTarget.edge
+                                      : undefined
+                                  }
+                                  onPointerDown={(event) => handleDiffTabPointerDown(tab.id, event)}
+                                  onClickCapture={handleDiffTabClickCapture}
+                                >
+                                  {tab.kind === "all" ? (
+                                    <GitCompareArrows className="editor-tab-icon-svg" />
+                                  ) : (
+                                    <EditorFileIcon path={tab.file.path} />
+                                  )}
+                                  <span className="diff-tab-label truncate">{tabLabel}</span>
+                                  {diffDirtyState[tab.id] ? (
+                                    <span className="diff-tab-dirty-indicator" aria-hidden />
+                                  ) : null}
+                                  <span
+                                    role="button"
+                                    tabIndex={0}
+                                    className="diff-tab-close"
+                                    onClick={(event) => {
+                                      event.preventDefault();
+                                      event.stopPropagation();
+                                      handleCloseDiffTab(tab.id);
+                                    }}
+                                    onKeyDown={(event) => {
+                                      if (event.key !== "Enter" && event.key !== " ") return;
+                                      event.preventDefault();
+                                      event.stopPropagation();
+                                      handleCloseDiffTab(tab.id);
+                                    }}
+                                    aria-label={`Close ${tabLabel}`}
+                                  >
+                                    <X className="size-3.5" />
+                                  </span>
+                                </TabsTrigger>
+                              }
+                            />
+                            <TooltipContent>{tooltipLabel}</TooltipContent>
+                          </Tooltip>
+                        );
+                      })}
+                    </TabsList>
+                    <ScrollBar orientation="horizontal" />
+                  </ScrollArea>
+                  <div className="diff-workspace-tabs-actions">
+                    {activeDiffTab?.kind === "all" ? (
+                      <Tooltip>
+                        <TooltipTrigger
+                          render={
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon-xs"
+                              className="diff-workspace-close"
+                              onClick={() => {
+                                if (allDiffsAreCollapsed) {
+                                  setAllDiffsExpandRequest((current) => current + 1);
+                                } else {
+                                  setAllDiffsCollapseRequest((current) => current + 1);
+                                }
+                              }}
+                              aria-label={allDiffsAreCollapsed ? "Expand all files" : "Collapse all files"}
+                            >
+                              <FoldVertical className="size-3.5" />
+                            </Button>
+                          }
+                        />
+                        <TooltipContent>
+                          {allDiffsAreCollapsed ? "Expand all files" : "Collapse all files"}
+                        </TooltipContent>
+                      </Tooltip>
+                    ) : null}
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon-xs"
+                      className="diff-workspace-close"
+                      onClick={handleCloseAllDiffTabs}
+                      aria-label="Close all diff tabs"
+                    >
+                      <X className="size-3.5" />
+                    </Button>
+                  </div>
+                </div>
+                {activeDiffTab.kind === "all" ? null : (
+                  <div className="diff-workspace-pathbar">
+                    {activeDiffSelection ? (
+                      <>
+                        <div className="diff-workspace-pathbar-main">
+                          <EditorFileIcon path={activeDiffSelection.file.path} />
+                          <span className="diff-workspace-pathbar-path">
+                            {activeDiffSelection.file.oldPath ? `${activeDiffSelection.file.oldPath} → ` : ""}
+                            {activeDiffSelection.file.path}
+                          </span>
+                        </div>
+                        {activeDiffChrome ? (
+                          <div className="diff-workspace-pathbar-meta">
+                            <span className={cn("diff-editor-category", `is-${activeDiffSelection.category}`)}>
+                              {activeDiffChrome.categoryLabel}
+                            </span>
+                            <span className="all-diffs-item-separator">•</span>
+                            <span className={cn("diff-editor-status-code", `is-${activeDiffSelection.file.status}`)}>
+                              {activeDiffChrome.statusCode}
+                            </span>
+                            {activeDiffChrome.editableLabel ? (
+                              <>
+                                <span className="all-diffs-item-separator">•</span>
+                                <span
+                                  className="diff-editor-edit-state"
+                                  data-dirty={diffDirtyState[activeDiffTab.id] ? "true" : undefined}
+                                >
+                                  {activeDiffChrome.editableLabel}
+                                </span>
+                              </>
+                            ) : null}
+                            <span className="all-diffs-item-controls">
+                              <span className="diff-editor-chunk-count">
+                                {activeDiffChrome.currentChunkNumber}/{activeDiffChrome.chunkCount || 0}
+                              </span>
+                              <Tooltip>
+                                <TooltipTrigger
+                                  render={
+                                    <Button
+                                      type="button"
+                                      variant="ghost"
+                                      size="icon-xs"
+                                      className="diff-editor-action"
+                                      disabled={activeDiffChrome.chunkCount === 0}
+                                      onClick={activeDiffChrome.navigatePrevious}
+                                    >
+                                      <ChevronUp className="size-3.5" />
+                                    </Button>
+                                  }
+                                />
+                                <TooltipContent>Previous change</TooltipContent>
+                              </Tooltip>
+                              <Tooltip>
+                                <TooltipTrigger
+                                  render={
+                                    <Button
+                                      type="button"
+                                      variant="ghost"
+                                      size="icon-xs"
+                                      className="diff-editor-action"
+                                      disabled={activeDiffChrome.chunkCount === 0}
+                                      onClick={activeDiffChrome.navigateNext}
+                                    >
+                                      <ChevronDown className="size-3.5" />
+                                    </Button>
+                                  }
+                                />
+                                <TooltipContent>Next change</TooltipContent>
+                              </Tooltip>
+                              <Tooltip>
+                                <TooltipTrigger
+                                  render={
+                                    <Button
+                                      type="button"
+                                      variant="ghost"
+                                      size="icon-xs"
+                                      className="diff-editor-action"
+                                      data-active="true"
+                                      onClick={activeDiffChrome.toggleMode}
+                                    >
+                                      {activeDiffChrome.mode === "inline" ? (
+                                        <List className="size-3.5" />
+                                      ) : (
+                                        <Columns2 className="size-3.5" />
+                                      )}
+                                    </Button>
+                                  }
+                                />
+                                <TooltipContent>
+                                  {activeDiffChrome.mode === "inline"
+                                    ? "Switch to side by side diff"
+                                    : "Switch to inline diff"}
+                                </TooltipContent>
+                              </Tooltip>
+                              <Tooltip>
+                                <TooltipTrigger
+                                  render={
+                                    <Button
+                                      type="button"
+                                      variant="ghost"
+                                      size="icon-xs"
+                                      className="diff-editor-action"
+                                      data-active={activeDiffChrome.hideUnchanged ? "true" : undefined}
+                                      onClick={activeDiffChrome.toggleUnchanged}
+                                    >
+                                      <FoldVertical className="size-3.5" />
+                                    </Button>
+                                  }
+                                />
+                                <TooltipContent>
+                                  {activeDiffChrome.hideUnchanged
+                                    ? "Show unchanged lines"
+                                    : "Hide unchanged lines"}
+                                </TooltipContent>
+                              </Tooltip>
+                            </span>
+                          </div>
+                        ) : null}
+                      </>
+                    ) : (
+                      <div className="diff-workspace-pathbar-main">
+                        <EditorFileIcon path={activeDiffTab.file.path} />
+                        <span className="diff-workspace-pathbar-path">
+                          {activeDiffTab.file.oldPath ? `${activeDiffTab.file.oldPath} → ` : ""}
+                          {activeDiffTab.file.path}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+              <div className="editor-content">
+                {activeDiffTab.kind === "all" ? (
+                  <AllDiffsView
+                    workspacePath={workspacePath!}
+                    stagedFiles={git.status?.staged ?? []}
+                    unstagedFiles={git.combinedChanges}
+                    collapseAllRequest={allDiffsCollapseRequest}
+                    expandAllRequest={allDiffsExpandRequest}
+                    onOpenFile={handleOpenDiffFile}
+                    onStageFile={git.stageFile}
+                    onUnstageFile={git.unstageFile}
+                    onDiscardFile={git.discardFile}
+                    onSaved={() => git.refresh({ silent: true })}
+                    onAllCollapsedChange={setAllDiffsAreCollapsed}
+                    onDirtyChange={(dirty) => {
+                      setDiffTabDirty(activeDiffTab.id, dirty);
+                    }}
+                  />
+                ) : (
+                  <DiffEditor
+                    workspacePath={workspacePath!}
+                    file={activeDiffTab.file}
+                    category={activeDiffTab.category}
+                    refreshToken={git.refreshToken}
+                    chromePlacement="external"
+                    onOpenFile={handleOpenDiffFile}
+                    onStageFile={git.stageFile}
+                    onUnstageFile={git.unstageFile}
+                    onDiscardFile={git.discardFile}
+                    onSaved={() => git.refresh({ silent: true })}
+                    onChromeChange={(chrome) => {
+                      handleDiffChromeChange(activeDiffTab.id, chrome);
+                    }}
+                    onDirtyChange={(dirty) => {
+                      setDiffTabDirty(activeDiffTab.id, dirty);
+                    }}
+                  />
+                )}
+              </div>
+            </Tabs>
+          ) : (
+            <div className="terminal-shell terminal-shell-empty">
+              <div className="terminal-tabs-bar terminal-tabs-bar-empty">
+                <div className="terminal-tabs-empty-label">No diff yet</div>
+              </div>
+              <div className="terminal-stage">
+                <WorkspaceEmptyState
+                  visual={<GitCompareArrows className="workspace-empty-icon" />}
+                  title="Diff workspace is empty"
+                  description="Open a changed file or use Open Changes from Source Control when you want a repository-level diff view."
+                  meta={workspaceDisplayPath ? `Workspace: ${workspaceDisplayPath}` : undefined}
+                  actions={[
+                    {
+                      icon: <GitCompareArrows className="size-4" />,
+                      label: "Open Changes",
+                      hint: "review",
+                      onClick: handleOpenAllDiffs,
+                      emphasis: true,
+                    },
+                  ]}
+                />
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }, [
+    activeDiffChrome,
+    activeDiffSelection,
+    activeDiffTab,
+    allDiffsAreCollapsed,
+    allDiffsCollapseRequest,
+    allDiffsExpandRequest,
+    diffDirtyState,
+    diffTabDropTarget,
+    diffTabs,
+    draggedDiffTab,
+    git,
+    handleCloseAllDiffTabs,
+    handleCloseDiffTab,
+    handleDiffChromeChange,
+    handleDiffTabClickCapture,
+    handleDiffTabPointerDown,
+    handleOpenAllDiffs,
+    handleOpenDiffFile,
+    handleTabsWheel,
+    totalChangedFiles,
+    workspaceDisplayPath,
+    workspacePath,
+  ]);
+
+  const renderEmbeddedWorkspacePane = useCallback((paneNode: NativeTerminalPaneLeaf): ReactNode => {
+    const embeddedLabel =
+      paneNode.workspaceKind === "terminal"
+        ? "Terminal"
+        : paneNode.workspaceKind === "editor"
+          ? "Editor"
+          : paneNode.workspaceKind === "diff"
+            ? "Diff"
+            : "New split";
+
+    const embeddedIcon =
+      paneNode.workspaceKind === "terminal"
+        ? <SquareTerminal className="size-3.5" />
+        : paneNode.workspaceKind === "editor"
+          ? <FileText className="size-3.5" />
+          : paneNode.workspaceKind === "diff"
+            ? <GitCompareArrows className="size-3.5" />
+            : <PanelLeft className="size-3.5" />;
+
+    const content =
+      paneNode.workspaceKind === null ? (
+        <WorkspaceEmptyState
+          visual={<PanelLeft className="workspace-empty-icon" />}
+          title="Choose a workspace for this split"
+          description="This new pane can host another AI Coding CLI page, a native terminal, the editor, or the diff workspace."
+          actions={[
+            {
+              icon: <Sparkles className="size-4" />,
+              label: "AI Coding CLI",
+              hint: "launch",
+              onClick: () => handleChooseEmbeddedWorkspace(paneNode.id, "agent"),
+              emphasis: true,
+            },
+            {
+              icon: <SquareTerminal className="size-4" />,
+              label: "Terminal",
+              hint: "shell",
+              onClick: () => handleChooseEmbeddedWorkspace(paneNode.id, "terminal"),
+            },
+            {
+              icon: <FileText className="size-4" />,
+              label: "Editor",
+              hint: "files",
+              onClick: () => handleChooseEmbeddedWorkspace(paneNode.id, "editor"),
+            },
+            {
+              icon: <GitCompareArrows className="size-4" />,
+              label: "Diff",
+              hint: "review",
+              onClick: () => handleChooseEmbeddedWorkspace(paneNode.id, "diff"),
+            },
+          ]}
+        />
+      ) : paneNode.workspaceKind === "terminal" ? (
+        renderEmbeddedTerminalWorkspace()
+      ) : paneNode.workspaceKind === "editor" ? (
+        renderEmbeddedEditorWorkspace()
+      ) : paneNode.workspaceKind === "diff" ? (
+        renderEmbeddedDiffWorkspace()
+      ) : null;
+
+    return (
+      <div
+        className="workspace-split-group"
+        data-active={paneNode.id === activeAgentWorkspacePaneId ? "true" : undefined}
+        onMouseDown={() => setActiveAgentWorkspacePaneId(paneNode.id)}
+      >
+        <div className="terminal-shell terminal-group-shell">
+          <div className="terminal-tabs-bar">
+            <div className="terminal-tabs-empty-label flex items-center gap-1.5">
+              {embeddedIcon}
+              <span>{embeddedLabel}</span>
+            </div>
+            <div className="terminal-tabs-actions agent-preset-menu-anchor">
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-xs"
+                className="terminal-tab-create"
+                onClick={() => handleSplitAgentWorkspacePane(paneNode.id, "horizontal")}
+                aria-label="Split pane left and right"
+              >
+                <Columns2 className="size-3.5" />
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-xs"
+                className="terminal-tab-create"
+                onClick={() => handleSplitAgentWorkspacePane(paneNode.id, "vertical")}
+                aria-label="Split pane top and bottom"
+              >
+                <Rows2 className="size-3.5" />
+              </Button>
+              {agentWorkspacePaneCount > 1 ? (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-xs"
+                  className="terminal-tab-create"
+                  onClick={() => handleCloseAgentWorkspaceGroup(paneNode.id)}
+                  aria-label="Close pane"
+                >
+                  <X className="size-3.5" />
+                </Button>
+              ) : null}
+            </div>
+          </div>
+          <div className="terminal-stage">{content}</div>
+        </div>
+      </div>
+    );
+  }, [
+    activeAgentWorkspacePaneId,
+    agentWorkspacePaneCount,
+    handleChooseEmbeddedWorkspace,
+    handleCloseAgentWorkspaceGroup,
+    handleSplitAgentWorkspacePane,
+    renderEmbeddedDiffWorkspace,
+    renderEmbeddedEditorWorkspace,
+    renderEmbeddedTerminalWorkspace,
+  ]);
+
   const renderAgentWorkspacePane = useCallback((paneNode: NativeTerminalPaneNode): ReactNode => {
     if (paneNode.type === "split") {
       return (
@@ -3363,6 +4362,10 @@ export function MainLayout() {
       .filter((tab): tab is TerminalTab => Boolean(tab));
     const activePaneTab =
       paneTabs.find((tab) => tab.id === paneNode.activeTabId) ?? paneTabs[0] ?? null;
+
+    if (paneNode.workspaceKind !== undefined && paneNode.workspaceKind !== "agent") {
+      return renderEmbeddedWorkspacePane(paneNode);
+    }
 
     return (
       <div
@@ -3617,6 +4620,7 @@ export function MainLayout() {
     recentClaudeSessions,
     recentClaudeSessionsError,
     recentClaudeSessionsLoading,
+    renderEmbeddedWorkspacePane,
     workspacePath,
   ]);
 
@@ -4064,8 +5068,8 @@ export function MainLayout() {
                   className="workspace-panel workspace-panel-agent"
                   data-active={activeWorkspace === "agent" ? "true" : undefined}
                 >
-                  {agentTerminalTabs.length > 0 ? (
-                    agentWorkspacePaneTree ? renderAgentWorkspacePane(agentWorkspacePaneTree) : null
+                  {agentWorkspacePaneTree ? (
+                    renderAgentWorkspacePane(agentWorkspacePaneTree)
                   ) : (
                     <div className="terminal-shell terminal-shell-empty">
                       <div className="terminal-tabs-bar terminal-tabs-bar-empty">
