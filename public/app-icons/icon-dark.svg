@@ -1,50 +1,24 @@
-<svg width="256" height="256" viewBox="0 0 256 256"
-     xmlns="http://www.w3.org/2000/svg">
-  <!-- Background: dark rounded-rectangle app icon -->
-  <rect x="8" y="8" width="240" height="240" rx="48"
-        fill="#0A0A0A"/>
-
-  <!-- AI glow: subtle cyan gradient behind brackets -->
+<svg width="256" height="256" viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
+  <title>Soren Superman Dark Icon</title>
   <defs>
-    <radialGradient id="aiGlow" cx="50%" cy="50%" r="60%">
-      <stop offset="0%" stop-color="#00D4FF" stop-opacity="0.25"/>
-      <stop offset="70%" stop-color="#007ACC" stop-opacity="0.08"/>
-      <stop offset="100%" stop-color="#000000" stop-opacity="0"/>
-    </radialGradient>
+    <linearGradient id="darkBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#08111e" />
+      <stop offset="55%" stop-color="#0d1d33" />
+      <stop offset="100%" stop-color="#07131f" />
+    </linearGradient>
+    <linearGradient id="darkCrest" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#7ce7ff" />
+      <stop offset="50%" stop-color="#22b8ff" />
+      <stop offset="100%" stop-color="#0e79ff" />
+    </linearGradient>
   </defs>
-  <ellipse cx="128" cy="128" rx="80" ry="60"
-           fill="url(#aiGlow)"/>
 
-  <!-- Clean subset brackets: pure white, no distractions -->
-  <!-- Left bracket -->
-  <path d="M112 92
-           H 104
-           C 92 92 84 98 84 108
-           V 148
-           C 84 158 92 164 104 164
-           H 112"
-        fill="none"
-        stroke="#F5F5F5"
-        stroke-width="12"
-        stroke-linecap="round"
-        stroke-linejoin="round"/>
-
-  <!-- Right bracket -->
-  <path d="M144 92
-           H 152
-           C 164 92 172 98 172 108
-           V 148
-           C 172 158 164 164 152 164
-           H 144"
-        fill="none"
-        stroke="#F5F5F5"
-        stroke-width="12"
-        stroke-linecap="round"
-        stroke-linejoin="round"/>
-
-  <!-- AI Agent intelligence ring: subtle outer glow -->
-  <circle cx="128" cy="128" r="92" 
-          fill="none" stroke="#00D4FF" 
-          stroke-width="2" opacity="0.15"/>
-
+  <rect x="8" y="8" width="240" height="240" rx="52" fill="url(#darkBg)" />
+  <circle cx="128" cy="128" r="74" fill="#113356" opacity="0.2" />
+  <path d="M128 42 194 72 178 176 128 216 78 176 62 72Z" fill="url(#darkCrest)" />
+  <path d="M128 58 175 80 163 166 128 194 93 166 81 80Z" fill="#0b1625" />
+  <path
+    d="M164 92H118c-14 0-23 5-27 12-4 8-2 18 8 25l34 15c7 3 10 7 8 12-2 5-7 7-15 7H91v24h44c17 0 29-6 35-16 5-9 4-21-10-28l-33-15c-6-3-8-6-7-10 1-4 5-6 13-6h31Z"
+    fill="#f8fbff"
+  />
 </svg>

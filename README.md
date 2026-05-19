@@ -6,7 +6,7 @@
 
 🌐 **English** | [**中文**](./README.zh-CN.md)
 
-<sub><strong>Soren Superman v0.0.2 is out.</strong> Supports macOS and Windows. Download it from <a href="https://github.com/Sett1a/soren-supermum/releases">Releases</a>.</sub>
+<sub><strong>Soren Superman v0.0.3 is out.</strong> Supports macOS and Windows. Download it from <a href="https://github.com/Sett1a/soren-superman/releases">Releases</a>.</sub>
 
 > <sub><strong>macOS note:</strong> If macOS says `Soren Superman.app` is damaged or blocks it from opening, see the <a href="#macos-install-note">macOS Install Note</a> section below for instructions.</sub>
 >
@@ -167,7 +167,7 @@ xattr -dr com.apple.quarantine "/Applications/Soren Superman.app"
 3. If step 2 does not fix it, or macOS blocks the downloaded DMG before you can open it, also remove quarantine from the DMG and try again:
 
 ```bash
-xattr -dr com.apple.quarantine ~/Downloads/Soren_Superman_0.0.2_aarch64.dmg
+xattr -dr com.apple.quarantine ~/Downloads/Soren_Superman_0.0.3_aarch64.dmg
 ```
 
 **In most cases, step 2 is the only step required.**

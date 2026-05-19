@@ -4,7 +4,7 @@
 
 ### 面向 AI 时代的简单、轻量但强大的 AI 代码编辑器。
 
-<sub><strong>Soren Superman v0.0.2 已发布。</strong> 现已支持 macOS 和 Windows，可在 <a href="https://github.com/Sett1a/soren-supermum/releases">Releases</a> 下载。</sub>
+<sub><strong>Soren Superman v0.0.3 已发布。</strong> 现已支持 macOS 和 Windows，可在 <a href="https://github.com/Sett1a/soren-superman/releases">Releases</a> 下载。</sub>
 
 > <sub><strong>macOS 提醒：</strong> 如果 macOS 提示 `Soren Superman.app` 已损坏，或阻止它打开，请查看下方的 <a href="#macos-安装提醒">macOS 安装提醒</a> 获取说明。</sub>
 >
@@ -165,7 +165,7 @@ xattr -dr com.apple.quarantine "/Applications/Soren Superman.app"
 3. 如果第 2 步还不行，或者 DMG 还没打开就被系统拦截，再给 DMG 移除 quarantine 后重试：
 
 ```bash
-xattr -dr com.apple.quarantine ~/Downloads/Soren_Superman_0.0.2_aarch64.dmg
+xattr -dr com.apple.quarantine ~/Downloads/Soren_Superman_0.0.3_aarch64.dmg
 ```
 
 **大多数情况下，只需要执行第 2 步。**
